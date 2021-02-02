@@ -17,5 +17,5 @@ name = "day-2"
 path = "src/day-2/main.rs"
 
 [dependencies]
-anyhow = "1.0.34"
+anyhow = "1.0.38"
 num-traits = "0.2.14"
