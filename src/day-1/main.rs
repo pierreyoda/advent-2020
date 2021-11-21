@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 
-use advent_2020_common::run_with_scaffolding;
+use advent_2020_common::run_with_scaffolding_integers;
 
 const TARGET: u32 = 2020;
 
@@ -38,10 +38,10 @@ fn compute_solution_3(data: &[u32]) -> Result<u32> {
 
 fn main() -> Result<()> {
     // Part 1
-    run_with_scaffolding("day-1", b'\n', |inputs| Ok(compute_solution_2(&inputs)?))?;
+    run_with_scaffolding_integers("day-1", b'\n', |inputs| Ok(compute_solution_2(&inputs)?))?;
 
     // Part 2
-    run_with_scaffolding("day-1", b'\n', |inputs| Ok(compute_solution_3(&inputs)?))?;
+    run_with_scaffolding_integers("day-1", b'\n', |inputs| Ok(compute_solution_3(&inputs)?))?;
 
     Ok(())
 }

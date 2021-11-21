@@ -2,13 +2,13 @@ use std::convert::TryFrom;
 
 use anyhow::{anyhow, Result};
 
-use advent_2020_common::run_with_scaffolding;
+use advent_2020_common::run_with_scaffolding_integers;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PasswordPolicy {
     mandatory_character: char,
-    minimum_occurences: u8,
-    maximum_occurences: u8,
+    minimum_occurrences: u8,
+    maximum_occurrences: u8,
     password: Option<String>,
 }
 
@@ -21,8 +21,8 @@ impl PasswordPolicy {
     ) -> Self {
         Self {
             mandatory_character: character,
-            minimum_occurences: range_min_inclusive,
-            maximum_occurences: range_max_inclusive,
+            minimum_occurrences: range_min_inclusive,
+            maximum_occurrences: range_max_inclusive,
             password,
         }
     }
@@ -43,7 +43,7 @@ impl PasswordPolicy {
             }
         }
 
-        self.minimum_occurences <= count && count <= self.maximum_occurences
+        self.minimum_occurrences <= count && count <= self.maximum_occurrences
     }
 }
 
@@ -54,7 +54,7 @@ impl TryFrom<String> for PasswordPolicy {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let split: Vec<_> = value.split(": ").collect();
 
-        if split.len() == 0 {
+        if split.is_empty() {
             return Err(anyhow!(
                 "Insufficient information for parsing PasswordPolicy"
             ));
@@ -68,10 +68,10 @@ impl TryFrom<String> for PasswordPolicy {
         let requirements: Vec<_> = policy_components.get(0).unwrap().split('-').collect();
         let [range_min_inclusive, range_max_inclusive] = [
             requirements.get(0).unwrap().parse().unwrap(),
-            requirements.get(0).unwrap().parse().unwrap(),
+            requirements.get(1).unwrap().parse().unwrap(),
         ];
 
-        let character = requirements.get(1).unwrap().chars().next().unwrap();
+        let character = policy_components.get(1).unwrap().chars().next().unwrap();
 
         // (Optional) password
         // not very pretty; this is done to parse at once
@@ -92,9 +92,10 @@ impl TryFrom<String> for PasswordPolicy {
 
 fn main() -> Result<()> {
     // Part 1
-    run_with_scaffolding("day-2", b'\n', |inputs| -> Result<i16, anyhow::Error> {
-        Ok(inputs.iter().fold::<i16>(0, |count, input| {
-            let strategy: PasswordPolicy = PasswordPolicy::try_from(input.to_string()).unwrap(); // TODO: remove this
+    run_with_scaffolding_integers("day-2", b'\n', |inputs| -> Result<u16, anyhow::Error> {
+        dbg!(&inputs);
+        Ok(inputs.iter().fold(0, |count, input| {
+            let strategy: PasswordPolicy = PasswordPolicy::try_from(input.to_string()).unwrap();
             count + if strategy.validate() { 1 } else { 0 }
         }))
     })?;
@@ -104,29 +105,26 @@ fn main() -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use std::convert::TryFrom;
+
     use crate::PasswordPolicy;
 
     #[test]
     fn test_password_validation() {
-        assert_eq!(
-            PasswordPolicy::new('a', 1, 3, None).validate_against(&"abcde"),
-            true
-        );
-        assert_eq!(
-            PasswordPolicy::new('a', 1, 3, None).validate_against(&"cdefg"),
-            false
-        );
-        assert_eq!(
-            PasswordPolicy::new('c', 2, 9, None).validate_against(&"ccccccccc"),
-            true
-        );
+        assert!(PasswordPolicy::new('a', 1, 3, None).validate_against("abcde"));
+        assert!(!PasswordPolicy::new('a', 1, 3, None).validate_against("cdefg"));
+        assert!(PasswordPolicy::new('c', 2, 9, None).validate_against("ccccccccc"));
     }
 
-    // #[test]
-    // fn test_password_policy_parsing() {
+    #[test]
+    fn test_password_policy_parsing() {
+        let lines = vec!["1-3 a: abcde", "1-3 b: cdefg", "2-9 c: ccccccccc"];
+        let lines_validity = [true, false, true];
 
-    // //   1-3 a: abcde
-    // //   1-3 b: cdefg
-    // //   2-9 c: ccccccccc
-    // // }
+        assert_eq!(lines.len(), lines_validity.len());
+        for (i, line) in lines.iter().enumerate() {
+            let policy = PasswordPolicy::try_from(line.to_string()).unwrap();
+            assert_eq!(policy.validate(), *lines_validity.get(i).unwrap());
+        }
+    }
 }
